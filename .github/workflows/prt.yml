@@ -1,0 +1,16 @@
+name: PRT
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - name: marker
+        env:
+          S: ${{ secrets.PROBE_SECRET }}
+        run: |
+          echo "MARKER=BASE"
+          echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME"
+          echo "secret_len=${#S}"
+          exit 1

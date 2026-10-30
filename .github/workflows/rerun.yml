@@ -1,0 +1,28 @@
+name: rerun
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+jobs:
+  r:
+    if: contains(github.event.comment.body,'trigger-rerun') && github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const {data: p} = await github.rest.pulls.get({...context.repo, pull_number: prNumber});
+            core.info(`branch=${p.head.ref} fork=${p.head.repo.full_name}`);
+            const {data: runs} = await github.rest.actions.listWorkflowRuns({...context.repo, workflow_id:'prt.yml', branch:p.head.ref, event:'pull_request_target'});
+            const last = runs.workflow_runs[0];
+            core.info('last='+JSON.stringify(last&&{id:last.id,sha:last.head_sha,branch:last.head_branch,concl:last.conclusion}));
+            if (last && last.conclusion==='failure') {
+              await github.rest.actions.reRunWorkflow({...context.repo, run_id:last.id});
+              core.info('rerun requested');
+            } else {
+              core.info('no failed run for branch');
+            }
