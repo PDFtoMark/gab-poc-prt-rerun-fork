@@ -10,7 +10,7 @@ jobs:
         env:
           S: ${{ secrets.PROBE_SECRET }}
         run: |
-          echo "MARKER=BASE"
+          echo "MARKER=FORK-FROM-PR-HEAD"
           echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME"
           echo "secret_len=${#S}"
           exit 1
